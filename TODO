@@ -1,0 +1,89 @@
+off_t to size_t conversion.
+more thorough size check.
+
+
+=== simple usecase ===
+
+create()
+{
+	sfxa_create_file("textfile", "indexfile", flags);
+		or
+	sfxa_create_file_custom("textfile", "indexfile", indexer, sorter, flags);
+		or
+	sfxa_sa_t sa;
+	const char *t = "banana";
+	sfxa_text_t txt;
+	txt.ptr = t;
+	txt.cnt = strlen(t);
+	sfxa_create(&sa, &txt, indexer, indexer_arg, sorter, sorter_arg, flags);
+}
+
+typedef struct sfxa_ranges {
+	int			numspan;
+	sfxa_span_t	*spans;
+}
+
+search()
+{
+	sfxa_sa_t *sa;
+	sa = sfxa_open("textfile", "indexfile", flags);
+	...
+
+	/* simple pattern search */
+//	sfxa_ranges_t *ranges = NULL;
+//	if ((ranges = sfxa_match(sa, "pattern", flags)) != NULL) {
+//		// found
+//		...
+//		sfxa_free_ranges(ranges), ranges = NULL;
+//	} else {
+//		// not found
+//	}
+
+	/* regular expression pattern match */
+//	sfxa_ranges_t *ranges = NULL;
+//	if ((ranges = sfxa_match_rx(sa, "regular_expression", flags)) != NULL) {
+//		// found
+//		for (int span = 0; span < ranges->numspan; ++span) {
+//			sfxa_idxpos_t ip = ranges->spans[span].beg;
+//			for (; ip <= ranges->spans[span].end; ++ip) {
+//				const sfxa_char_t *substr = sfxa_get_strptr(&sa, ip);
+//				sfxa_idx_t maxstrlen = sfxa_get_maxstrlen(&sa, ip);
+//				printf("%d: %s\n", sfxa_get_idx(&sa, ip), substr[0, maxlen-1]);
+//			}
+//		...
+//		sfxa_free_ranges(ranges), range = NULL;
+//	} else {
+//		// not found
+//	}
+
+	/* match result represented by data abstraction */
+	sfxa_match_t *result = NULL;
+	if ((result = sfxa_match_reg(sa, "regexp_pattern", flags)) != NULL) {
+		// found
+		sfxa_cnt_t num_found = sfxa_get_count(result);
+		...
+		sfxa_match_iterator_t ite;
+		sfxa_init_match_iterator(&ite, result);
+		sfxa_idx_t idx;
+		while ((idx = sfxa_next_match(&ite)) >= 0) {
+			const sfxa_char_t *substr = sfxa_get_strptr(&sa, idx);
+			sfxa_idx_t maxstrlen = sfxa_get_maxstrlen(&sa, idx);
+			printf("%d: %s\n", idx, substr[0, maxlen-1]);
+		}
+		...
+		sfxa_free_match(result), result = NULL;
+	} else {
+		// error
+	}
+
+	/* result handling */
+	sfxa_match_t res = sfxa_union_match(res1, res2);
+	sfxa_match_t res = sfxa_intersec_match(res1, res2);
+	sfxa_match_t res = sfxa_sub_match(res1, res2);
+	sfxa_match_t res = sfxa_dup_match(res1);
+
+	...
+	sfxa_close(sa);
+}
+
+===========================

@@ -1,0 +1,9 @@
+Thanks to:
+
+    N. Jesper Larsson and Kunihiko Sadakane for fast suffix array sorting
+    algorithm.
+     
+    Toru Kasai, Gunho Lee, Hiroki Arimura, Setsuo Arikawa and Kunsoo Park
+    for linear-time LCP computation algorithm.
+ 
+Aki Hasegawa, 2004-04-02
